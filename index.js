@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const port = process.env.port || 5000;
 
@@ -40,30 +40,50 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
-
+    
     app.get('/allData', async(req,res)=>{
       const cursor = dataCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     })
 
+    app.get('/allData/:id', async(req, res)=>{
+      const id= req.params.id
+      const query= {_id: new ObjectId(id)}
+      const option = {
+        projection: {id: 1,short_description: 1, price: 1, service_name:1, image: 1 },
+      };
+      const result = await dataCollection.findOne(query, option);
+      res.send(result)
+    })
+
     app.post("/cart", async(req, res)=>{
       const cart = req.body;
-      console.log(cart);
       const result= await cartProducts.insertOne(cart);
+      console.log("cart a add holam ami",result);
       res.send(result);
     })
+
+    app.get("/cart", async(req, res)=>{
+      let query = {}
+      console.log(req.query);
+      if(req.query?.email){
+        query= {email: req.query.email}
+        console.log(query);
+      }
+      const cursor = cartProducts.find(query);
+      const result = await cursor.toArray();
+      //console.log(result);
+      res.send(result);
+  })
+
     app.delete("/cart/:id", async(req, res)=>{
       const id = req.params.id;
-      const query = {_id: id}
+      const query = {_id: new ObjectId(id)}
       const result = await cartProducts.deleteOne(query);
       res.send(result);
     })
-    app.get("/cart", async(req, res)=>{
-      const cursor = cartProducts.find();
-      const result = await cursor.toArray();
-      res.send(result);
-  })
+  
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
