@@ -10,7 +10,7 @@ const port = process.env.port || 5000;
 
 //middleware
 app.use(cors({
-  origin: ['http://localhost:5173','https://educational-events-aaeb4.web.app'],
+  origin: ['https://educational-events-aaeb4.web.app','https://educational-events-aaeb4.firebaseapp.com'],
   credentials: true
 }))
 app.use(express.json());
@@ -32,7 +32,7 @@ const logger = async(req, res, next) => {
 }
 
 const verifyToken = async(req, res, next) => {
-  const token = req.cookies?.token;
+  const token = req?.cookies?.token;
   console.log(token);
   if(!token){
     return res.status(401).send({message : 'Not Authorized'})
@@ -64,7 +64,8 @@ async function run() {
       res
       .cookie('token', token, {
         httpOnly: true,
-        secure: false
+        secure: true,
+        sameSite: 'none'
       })
       .send({success: true})
     })
