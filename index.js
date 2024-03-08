@@ -107,6 +107,7 @@ async function run() {
         console.log('Existing: ', existingCartItem);
 
         if(!existingCartItem){
+          cart._id = new ObjectId();
           const result= await cartProducts.insertOne(cart);
         console.log("cart a add holam ami",result);
         }else{
